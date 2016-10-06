@@ -308,7 +308,12 @@ func New(config *api.DockerConfig, auth api.AuthConfig) (Docker, error) {
 	if err != nil {
 		return nil, err
 	}
-	k8sDocker := dockertools.ConnectToDockerOrDie(config.Endpoint, 0)
+	var k8sDocker dockertools.DockerInterface
+	if config.Endpoint != os.Getenv("DOCKER_HOST") {
+		k8sDocker = dockertools.ConnectToDockerOrDie(config.Endpoint, 0)
+	} else {
+		k8sDocker = dockertools.ConnectToDockerOrDie("", 0)
+	}
 	return &stiDocker{
 		kubeDockerClient: k8sDocker,
 		client:           client,
